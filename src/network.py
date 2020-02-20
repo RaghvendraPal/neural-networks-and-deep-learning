@@ -34,6 +34,10 @@ class Network(object):
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
+        self.mini_batch_size = 0
+        for i in range(len(self.weights)):
+            print(self.weights[i].shape)
+            print(self.biases[i].shape)
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
@@ -41,8 +45,7 @@ class Network(object):
             a = sigmoid(np.dot(w, a)+b)
         return a
 
-    def SGD(self, training_data, epochs, mini_batch_size, eta,
-            test_data=None):
+    def SGD(self, x_train, y_train, epochs, mini_batch_size, eta, x_test, y_test):
         """Train the neural network using mini-batch stochastic
         gradient descent.  The ``training_data`` is a list of tuples
         ``(x, y)`` representing the training inputs and the desired
@@ -51,17 +54,23 @@ class Network(object):
         network will be evaluated against the test data after each
         epoch, and partial progress printed out.  This is useful for
         tracking progress, but slows things down substantially."""
-        if test_data: n_test = len(test_data)
-        n = len(training_data)
-        for j in xrange(epochs):
-            random.shuffle(training_data)
-            mini_batches = [
-                training_data[k:k+mini_batch_size]
-                for k in xrange(0, n, mini_batch_size)]
+        self.mini_batch_size = mini_batch_size
+        if x_test: n_test = len(x_test)
+        n = len(x_train)
+        # print(x_train[0])
+        # print(y_train[0])
+        print("Length of Test Data : ", n_test)
+        print("Length of Train Data : ", n)
+        for j in range(epochs):
+            s = np.arange(len(x_train))
+            random.shuffle(s)
+            x_train = list(np.array(x_train)[s])
+            y_train = list(np.array(y_train)[s])
+            mini_batches = [zip(x_train[k:k+mini_batch_size], y_train[k:k+mini_batch_size]) for k in range(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
-            if test_data:
-                print("Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), n_test))
+            if x_test:
+                print("Epoch {0}: {1} / {2}".format(j, self.evaluate(zip(x_test, y_test)), n_test))
             else:
                 print("Epoch {0} complete".format(j))
 
@@ -72,13 +81,16 @@ class Network(object):
         is the learning rate."""
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
+        # for i in range(len(nabla_w)):
+        #
+        #     print(i,len(nabla_b[i]), len(nabla_w[i]))
         for x, y in mini_batch:
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [w-(eta/len(mini_batch))*nw
+        self.weights = [w-(eta/self.mini_batch_size)*nw
                         for w, nw in zip(self.weights, nabla_w)]
-        self.biases = [b-(eta/len(mini_batch))*nb
+        self.biases = [b-(eta/self.mini_batch_size)*nb
                        for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
@@ -108,7 +120,7 @@ class Network(object):
         # second-last layer, and so on.  It's a renumbering of the
         # scheme in the book, used here to take advantage of the fact
         # that Python can use negative indices in lists.
-        for l in xrange(2, self.num_layers):
+        for l in range(2, self.num_layers):
             z = zs[-l]
             sp = sigmoid_prime(z)
             delta = np.dot(self.weights[-l+1].transpose(), delta) * sp

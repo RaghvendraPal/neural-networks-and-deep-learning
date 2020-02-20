@@ -10,7 +10,7 @@ function usually called by our neural network code.
 
 #### Libraries
 # Standard library
-import _pickle as cPickle
+import pickle
 import gzip
 
 # Third-party libraries
@@ -41,11 +41,11 @@ def load_data():
     below.
     """
     f = gzip.open(sys.path[0]+'/data/mnist.pkl.gz', 'rb')
-    training_data, validation_data, test_data = cPickle.load(f)
+    training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
-    print("Shape of training data : ",training_data.shape)
-    print("Shape of training data : ",validation_data.shape)
-    print("Shape of training data : ",test_data.shape)
+    print("Shape of training data : ",training_data[0].shape, training_data[1].shape)
+    print("Shape of validation data : ",validation_data[0].shape, validation_data[1].shape)
+    print("Shape of test data : ",test_data[0].shape, test_data[1].shape)
     return (training_data, validation_data, test_data)
 
 def load_data_wrapper():
@@ -72,12 +72,14 @@ def load_data_wrapper():
     tr_d, va_d, te_d = load_data()
     training_inputs = [np.reshape(x, (784, 1)) for x in tr_d[0]]
     training_results = [vectorized_result(y) for y in tr_d[1]]
-    training_data = zip(training_inputs, training_results)
+    # training_data = zip(training_inputs, training_results)
     validation_inputs = [np.reshape(x, (784, 1)) for x in va_d[0]]
-    validation_data = zip(validation_inputs, va_d[1])
+    # training_results = [vectorized_result(y) for y in tr_d[1]]
+    # validation_data = zip(validation_inputs, va_d[1])
     test_inputs = [np.reshape(x, (784, 1)) for x in te_d[0]]
-    test_data = zip(test_inputs, te_d[1])
-    return (training_data, validation_data, test_data)
+    # training_results = [vectorized_result(y) for y in tr_d[1]]
+    # test_data = zip(test_inputs, te_d[1])
+    return (training_inputs, training_results, validation_inputs, va_d[1], test_inputs, te_d[1])
 
 def vectorized_result(j):
     """Return a 10-dimensional unit vector with a 1.0 in the jth
