@@ -10,11 +10,12 @@ function usually called by our neural network code.
 
 #### Libraries
 # Standard library
-import cPickle
+import _pickle as cPickle
 import gzip
 
 # Third-party libraries
 import numpy as np
+import sys
 
 def load_data():
     """Return the MNIST data as a tuple containing the training data,
@@ -39,9 +40,12 @@ def load_data():
     That's done in the wrapper function ``load_data_wrapper()``, see
     below.
     """
-    f = gzip.open('../data/mnist.pkl.gz', 'rb')
+    f = gzip.open(sys.path[0]+'/data/mnist.pkl.gz', 'rb')
     training_data, validation_data, test_data = cPickle.load(f)
     f.close()
+    print("Shape of training data : ",training_data.shape)
+    print("Shape of training data : ",validation_data.shape)
+    print("Shape of training data : ",test_data.shape)
     return (training_data, validation_data, test_data)
 
 def load_data_wrapper():
