@@ -44,7 +44,7 @@ def load_data():
     training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
     print("Shape of training data : ",training_data[0].shape, training_data[1].shape)
-    print("Shape of validation data : ",validation_data[0].shape, validation_data[1].shape)
+    # print("Shape of validation data : ",validation_data[0].shape, validation_data[1].shape)
     print("Shape of test data : ",test_data[0].shape, test_data[1].shape)
     return (training_data, validation_data, test_data)
 
@@ -79,6 +79,9 @@ def load_data_wrapper():
     test_inputs = [np.reshape(x, (784, 1)) for x in te_d[0]]
     # training_results = [vectorized_result(y) for y in tr_d[1]]
     # test_data = zip(test_inputs, te_d[1])
+    # print("Shape of training data : ",np.array(training_inputs).shape, np.array(training_results).shape)
+    # print("Shape of validation data : ",np.array(validation_inputs).shape)
+    # print("Shape of test data : ",np.array(test_inputs).shape)
     return (training_inputs, training_results, validation_inputs, va_d[1], test_inputs, te_d[1])
 
 def vectorized_result(j):

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 """
 network.py
 ~~~~~~~~~~
@@ -15,6 +16,9 @@ import random
 
 # Third-party libraries
 import numpy as np
+import pickle
+import src.graph_plot as graph
+import sys
 
 class Network(object):
 
@@ -35,9 +39,6 @@ class Network(object):
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
         self.mini_batch_size = 0
-        for i in range(len(self.weights)):
-            print(self.weights[i].shape)
-            print(self.biases[i].shape)
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
@@ -59,8 +60,10 @@ class Network(object):
         n = len(x_train)
         # print(x_train[0])
         # print(y_train[0])
-        print("Length of Test Data : ", n_test)
-        print("Length of Train Data : ", n)
+        # print("Length of Test Data : ", n_test)
+        # print("Length of Train Data : ", n)
+        accuracy = []
+        loss = []
         for j in range(epochs):
             s = np.arange(len(x_train))
             random.shuffle(s)
@@ -70,9 +73,16 @@ class Network(object):
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
             if x_test:
-                print("Epoch {0}: {1} / {2}".format(j, self.evaluate(zip(x_test, y_test)), n_test))
+                acc = self.evaluate(zip(x_test, y_test))
+                accuracy.append(acc/100)
+                loss.append(1-(acc/100))
+                print("Epoch {0}: {1} / {2}".format(j, acc, n_test))
             else:
                 print("Epoch {0} complete".format(j))
+        self.save_weights()
+        g = graph.Graph()
+        g.accuracy_plot(accuracy, 'network_accuracy')
+        g.loss_plot(loss, 'network_loss')
 
     def update_mini_batch(self, mini_batch, eta):
         """Update the network's weights and biases by applying
@@ -106,14 +116,21 @@ class Network(object):
         zs = [] # list to store all the z vectors, layer by layer
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, activation)+b
+            # print("Shape of z : ", z.shape)
             zs.append(z)
             activation = sigmoid(z)
+            # print("Shape of activation : ", activation.shape)
             activations.append(activation)
         # backward pass
         delta = self.cost_derivative(activations[-1], y) * \
             sigmoid_prime(zs[-1])
+        # print("Delta : ", delta)
+        # print("Shape of sigmoid_prime : ",sigmoid(zs[-1]))
         nabla_b[-1] = delta
+        # print("Shape of Delta : ", delta.shape)
+        # print("Shape of activations[-2].transpose() ",activations[-2].transpose().shape)
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
+        # print("nabla_w weight :" ,nabla_w[-1].shape)
         # Note that the variable l in the loop below is used a little
         # differently to the notation in Chapter 2 of the book.  Here,
         # l = 1 means the last layer of neurons, l = 2 is the
@@ -141,6 +158,17 @@ class Network(object):
         """Return the vector of partial derivatives \partial C_x /
         \partial a for the output activations."""
         return (output_activations-y)
+
+    def save_weights(self):
+        pickle_out = open(sys.path[0]+"/network_weights/weights.pickle","wb")
+        pickle.dump(self.weights, pickle_out)
+        pickle_out.close()
+
+        pickle_out = open(sys.path[0]+"/network_weights/biases.pickle","wb")
+        pickle.dump(self.biases, pickle_out)
+        pickle_out.close()
+        print("*"*10+" Weights Saved "+"*"*10)
+
 
 #### Miscellaneous functions
 def sigmoid(z):
