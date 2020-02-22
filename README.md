@@ -1,5 +1,6 @@
 # Code samples for "Neural Networks and Deep Learning"
 
+
 TO Predict the result on image:
 user need to run models_prediction.py in cmd using following command:
 python models_prediction.py -p image_path
