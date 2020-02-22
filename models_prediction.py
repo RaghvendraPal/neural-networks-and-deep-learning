@@ -1,9 +1,15 @@
 from __future__ import absolute_import
+from optparse import OptionParser
+
 import src.network_batch_prediction as network_batch_prediction
 import src.network_prediction as network_prediction
 import src.cnn_network as cnn_network
 
-path = 'test_image/7.png'
+parser = OptionParser()
+parser.add_option("-p", "--path", dest="image_path", help="Path to Image.")
+(options, args) = parser.parse_args()
+path = options.image_path
+
 print("For Image Present : ", path, "Output is -")
 print("*"*100)
 print("Prediction using Mini Batch BackPropagation Model")
